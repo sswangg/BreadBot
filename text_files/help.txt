@@ -1,0 +1,20 @@
+**Card Collection Stuff**
+bake
+pantry
+sell [card]
+buy [card]
+farm
+grain
+cards
+trade [card] for [card]
+prices
+bet [value]
+start quest
+view quest
+claim quest
+update log
+
+**Random Stuff**
+invitelink
+servers
+faq

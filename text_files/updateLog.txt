@@ -1,0 +1,17 @@
+**3/30/21**
+Added quests and update log. For more info on quests, type .bread help
+**3/31/21** 
+There was a strategy to make profit from betting so I made it so that if you won a bet, you'd get 20%-180% of the betting amount back, if you lose the bet however, you lose 100% of the betting amount
+**4/1/21**
+Instead of making the among of grain you get from winning a bet 20%-180%, I changed it to 20%-100%, however the chance to win the bet is now 60%. Also, the amount you lose when betting is 100%. Also added 9 more cards
+**4/4/21**
+Fixed bug where starting quests a second time would remove cards from .bread cards
+**4/6/21**
+Added bulk selling, so you can do commands like .bread sell all or .bread sell commons
+**4/11/2021**
+You can get duplicate cards now. Also, the total amount of cards you can have in a pantry is 200**4/12/2021**
+Added 2 more legendaries and 3 more mythicals
+**4/14/2021**
+You can trade up to 9 cards at a time now, for example [.bread trade baba, arepa for mollete, kitcha] Note: I will be working on bug fixes for this new feature later
+**11/18/2021**
+Rewriting code (actually this time)
