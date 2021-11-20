@@ -208,8 +208,8 @@ async def on_message(message):
     #Starts user account
     #Idk why theres two different blocks of code for starting a user account
     if message.content.startswith(prefix):
-      createAccount()
-      updateUserInfo()
+      await createAccount()
+      await updateUserInfo()
       
 
 

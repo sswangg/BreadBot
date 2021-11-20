@@ -16,7 +16,7 @@ from pymongo import MongoClient
 import math
 import collections
 from collections import Counter
-import basicFunctions
+from basicFunctions import *
 #client = discord.Client()
 
 #Basically Transfers important variables
@@ -72,7 +72,6 @@ async def updateUserInfo():
   global simplified_rare_pantry
   global simplified_mythical_pantry
   global simplified_legendary_pantry
-  global card_cooldown
   collection.update_one({"_id":message.author.id}, {"$set":{"name":message.author.name}})
   for result in user:
     common_pantry = result["common_pantry"]
@@ -105,6 +104,7 @@ async def updateUserInfo():
   simplified_legendary_pantry = set(legendary_pantry)
 
 async def bake():
+      global card_cooldown
       for result in user:
         card_cooldown = result["card_cooldown"]     
       #Checks to make sure baking meets requirements
