@@ -20,7 +20,7 @@ from basicFunctions import *
 #client = discord.Client()
 
 #Basically Transfers important variables
-def init(ctxClient,ctxMessage, ctxPantryLimit, ctxCommonBread,ctxRareBread,ctxMythicalBread,ctxLegendaryBread):
+def initMain(ctxClient,ctxMessage, ctxCommonBread,ctxRareBread,ctxMythicalBread,ctxLegendaryBread):
   global client
   global cluster
   global database
@@ -28,7 +28,6 @@ def init(ctxClient,ctxMessage, ctxPantryLimit, ctxCommonBread,ctxRareBread,ctxMy
   global myquery
   global user
   global message
-  global pantry_limit
   global common_bread
   global rare_bread
   global mythical_bread
@@ -37,14 +36,17 @@ def init(ctxClient,ctxMessage, ctxPantryLimit, ctxCommonBread,ctxRareBread,ctxMy
   cluster = pymongo.MongoClient(os.getenv('CONNECTION_URL'))
   database = cluster["UserData"]
   collection = database["UserData"]
-  myquery = { "_id": ctxMessage.author.id }
+  myquery = { "_id": ctxMessage.author.id}
   user = collection.find(myquery)
   message = ctxMessage
-  pantry_limit = ctxPantryLimit
   common_bread = ctxCommonBread
   rare_bread = ctxRareBread
   mythical_bread = ctxMythicalBread
   legendary_bread = ctxLegendaryBread
+
+def transferVariables(ctxPantryLimit):
+  global pantry_limit
+  pantry_limit = ctxPantryLimit
   
 #Checks server count
 async def servers():
@@ -72,6 +74,7 @@ async def updateUserInfo():
   global simplified_rare_pantry
   global simplified_mythical_pantry
   global simplified_legendary_pantry
+  global quest_cooldown
   collection.update_one({"_id":message.author.id}, {"$set":{"name":message.author.name}})
   for result in user:
     common_pantry = result["common_pantry"]
@@ -106,7 +109,7 @@ async def updateUserInfo():
 async def bake():
       global card_cooldown
       for result in user:
-        card_cooldown = result["card_cooldown"]     
+        card_cooldown = result["card_cooldown"]   
       #Checks to make sure baking meets requirements
       if time.time() - card_cooldown >= 3600 and len(pantry)<pantry_limit:
         card_category = random.randint(1,1000)
@@ -114,10 +117,11 @@ async def bake():
         if card_category > 0 and card_category <= 700:
             card = common_bread[random.randint(0,len(common_bread)-1)]
             embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a common", colour = 0x808080)
-            await message.channel.send(embed = embed)
+            
             collection.update_one({"_id":message.author.id}, {"$push":{"common_pantry":card}})
             collection.update_one({"_id":message.author.id}, {"$push":{"pantry":card}})
             collection.update_one({"_id":message.author.id}, {"$set":{"card_cooldown":time.time()}})
+            await message.channel.send(embed = embed)
 
         #Rare Card Baked
         if card_category > 700 and card_category <= 975:
@@ -161,3 +165,26 @@ async def bake():
       else:
         embed = discord.Embed(description = "You have don't have any more room left in your pantry", colour = 0xff1100)
         await message.channel.send(embed = embed)
+
+async def pantry():
+  global common_pantry
+  global rare_pantry
+  global mythical_pantry
+  global legendary_pantry
+  for result in user:
+    common_pantry = result["common_pantry"]
+    rare_pantry = result["rare_pantry"]
+    mythical_pantry = result["mythical_pantry"]
+    legendary_pantry = result["legendary_pantry"]
+  seperator = ', '
+  
+  common_shown = [count_duplicates(x, counted_pantry) for x in simplified_common_pantry]
+  rare_shown = [count_duplicates(x, counted_pantry) for x in simplified_rare_pantry]
+  mythical_shown = [count_duplicates(x, counted_pantry) for x in simplified_mythical_pantry]
+  legendary_shown = [count_duplicates(x, counted_pantry) for x in simplified_legendary_pantry]
+    
+  pantry_shown = '**Commons**: '+seperator.join(sorted(common_shown))+'\n\n**Rares**: '+seperator.join(sorted(rare_shown))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_shown))+'\n\n**Legendaries** '+seperator.join(sorted(legendary_shown))
+    
+  embed = discord.Embed(title = message.author.name+"'s pantry:", description = pantry_shown, colour = 0x000000)
+  embed.set_footer(text = 'Cards sell value: '+str(len(common_pantry)*500+len(rare_pantry)*2500+len(mythical_pantry)*6000+len(legendary_pantry)*20000)+' grain'+" | Size: "+str(len(pantry))+"/"+str(pantry_limit))
+  await message.channel.send(embed = embed)
