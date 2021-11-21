@@ -3,7 +3,6 @@ import discord
 import os
 import random
 from discord.ext import commands
-from discord.ext.commands import Bot
 import time
 import datetime
 from datetime import datetime
@@ -36,25 +35,7 @@ mythical_bread = []
 legendary_bread = []
 
 #Open bread_data files
-with open('bread_data/common_bread.txt') as my_file:
-    common_bread = my_file.readlines()
-    for i in range(0,len(common_bread)):
-      common_bread[i] = common_bread[i].strip()
 
-with open('bread_data/rare_bread.txt') as my_file:
-    rare_bread = my_file.readlines()
-    for i in range(0,len(rare_bread)):
-      rare_bread[i] = rare_bread[i].strip()
-
-with open('bread_data/mythical_bread.txt') as my_file:
-    mythical_bread = my_file.readlines()
-    for i in range(0,len(mythical_bread)):
-      mythical_bread[i] = mythical_bread[i].strip()
-
-with open('bread_data/legendary_bread.txt') as my_file:
-    legendary_bread = my_file.readlines()
-    for i in range(0,len(legendary_bread)):
-      legendary_bread[i] = legendary_bread[i].strip()
 with open('text_files/updateLog.txt') as my_file:
     updateLog = my_file.read()
 with open('text_files/help.txt') as my_file:
@@ -120,16 +101,21 @@ async def on_guild_join(guild):
     await client.change_presence(status=discord.Status.idle, activity=discord.Game('.bread help; In '+str(len(client.guilds))+' servers'))
     prefix = '.bread'
 
+client = commands.Bot(command_prefix='.bread ')
+
+@client.command(name="test")
+async def test(ctx,arg):
+  await ctx.send(arg)
 
 
-@client.event
-async def on_message(message):
+@client.listen("on_message")
+async def something(message):
+    
     global prefix
     #????
     global after_keyowrd
     global player
     global madlibs
-    global test
     global collectors
     global card_cooldown
     global common_pantry
@@ -141,7 +127,7 @@ async def on_message(message):
     global quest
     global quest_cooldown
     global counted_pantry
-    initMain(client, message,common_bread,rare_bread,mythical_bread,legendary_bread)
+    initMain(client, message)
     initVariables()
     #If message of author is client, then ignore
     if message.author == client.user:
@@ -214,10 +200,6 @@ async def on_message(message):
       await updateUserInfo()
       
 
-
-    if message.content == prefix + ' test':
-      pantry = common_pantry+rare_pantry+mythical_pantry+legendary_pantry
-      collection.update_one({"_id":message.author.id},{"$set":{"pantry":pantry}})
 
 ####
 
@@ -792,6 +774,7 @@ async def on_message(message):
         embed.set_footer(text = "Type .bread view quest to show your ongoing quest")
         await message.channel.send(embed = embed)
 
+
     
 
 
@@ -989,8 +972,9 @@ async def on_raw_reaction_add (payload):
         await message.edit(embed = embed)
 
 
+
     
- 
+
 
 
 

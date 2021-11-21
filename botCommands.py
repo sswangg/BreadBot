@@ -20,7 +20,7 @@ from basicFunctions import *
 #client = discord.Client()
 
 #Basically Transfers important variables
-def initMain(ctxClient,ctxMessage, ctxCommonBread,ctxRareBread,ctxMythicalBread,ctxLegendaryBread):
+def initMain(ctxClient,ctxMessage):
   global client
   global cluster
   global database
@@ -28,25 +28,24 @@ def initMain(ctxClient,ctxMessage, ctxCommonBread,ctxRareBread,ctxMythicalBread,
   global myquery
   global user
   global message
-  global common_bread
-  global rare_bread
-  global mythical_bread
-  global legendary_bread
-  client = ctxClient
   cluster = pymongo.MongoClient(os.getenv('CONNECTION_URL'))
   database = cluster["UserData"]
   collection = database["UserData"]
   myquery = { "_id": ctxMessage.author.id}
   user = collection.find(myquery)
   message = ctxMessage
+
+def transferVariables(ctxPantryLimit,ctxCommonBread,ctxRareBread,ctxMythicalBread,ctxLegendaryBread):
+  global pantry_limit
+  global common_bread
+  global rare_bread
+  global mythical_bread
+  global legendary_bread
+  pantry_limit = ctxPantryLimit
   common_bread = ctxCommonBread
   rare_bread = ctxRareBread
   mythical_bread = ctxMythicalBread
   legendary_bread = ctxLegendaryBread
-
-def transferVariables(ctxPantryLimit):
-  global pantry_limit
-  pantry_limit = ctxPantryLimit
   
 #Checks server count
 async def servers():
