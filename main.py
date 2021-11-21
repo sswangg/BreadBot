@@ -253,12 +253,7 @@ async def something(message):
 
 
 
-    
-    if message.content == prefix + ' grain':
-      for result in user:
-        grain = int(result["grain"])      
-      embed = discord.Embed(title = message.author.name+"'s grain:", description = str(grain), colour = 0x000000)
-      await message.channel.send(embed = embed)
+      
     
 
       
@@ -420,32 +415,8 @@ async def something(message):
         await message.channel.send(embed = embed)
     
     #grain
-    if message.content.startswith(prefix+ ' grain') and message.content != prefix+' grain' and len(message.mentions) == 1:
-     
-      msg = message.content
-      null, null, after = msg.partition('grain')
-      null, null, after_at = after.partition('@')
-      viewing_id, null, null = after_at.partition('>')
-      viewing_id = str(viewing_id).replace("!","")
-      viewing_id = viewing_id.strip()
-      viewing_id = int(viewing_id)
-      view_query = { "_id": viewing_id }
-
-      viewing = collection.find(view_query)
 
 
-
-        
-      if collection.count_documents(view_query) == 1:
-
-        for result in viewing:
-            grain = result["grain"]
-
-        viewing_user = await client.fetch_user(viewing_id)
-
-        embed = discord.Embed(title = str(viewing_user.name)+"'s grain:", description = grain, colour = 0x000000)
-        
-        await message.channel.send(embed = embed)
     
     if message.content.startswith(prefix+ ' bet'):
       msg = message.content
@@ -890,6 +861,30 @@ async def buy(ctx,*,buying_card):
       embed.set_footer(text = "To check the prices of bread, type .bread prices")
       await ctx.send(embed = embed)    
 
+@client.command(name="grain")
+async def show_grain(ctx,*mention):
+  await initCommand(ctx)
+  if mention!='':
+    x = "<@!>"
+    for char in x:
+      mention = mention.replace(char, "")
+    viewing_id = mention
+    viewing_id = int(viewing_id)
+
+  else:
+    viewing_id = ctx.author.id
+  view_query = { "_id": viewing_id }
+
+  viewing = collection.find(view_query)
+  if collection.count_documents(view_query) == 1:
+
+    for result in viewing:
+        grain = result["grain"]
+  viewing_user = await client.fetch_user(viewing_id)
+
+  embed = discord.Embed(title = str(viewing_user.name)+"'s grain:", description = grain, colour = 0x000000)
+  
+  await ctx.send(embed = embed)
 
 @client.event
 async def on_raw_reaction_add (payload):
