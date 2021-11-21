@@ -91,18 +91,64 @@ collection = database["UserData"]
 
 
 
-#main code
+
 client = discord.Client()
 
-#@client.event
-#async def on_guild_join():
-  #prefix = '.bread'
- 
+async def initCommand(message):
+  global myquery
+  global user
+  myquery = { "_id": message.author.id }
+  user = collection.find(myquery)
+  if (collection.count_documents(myquery) == 0):
+          post = {"_id": message.author.id, "pantry": [], "common_pantry": [], "rare_pantry":[],"mythical_pantry":[],"legendary_pantry":[],"card_cooldown":0,"grain":int(0), "farm_cooldown":0, "name":message.author.name, "quest": [], "quest_cooldown":0} 
+          collection.insert_one(post)
+  global common_pantry
+  global rare_pantry
+  global mythical_pantry
+  global legendary_pantry
+  global pantry
+  global card_cooldown
+  global farm_cooldown
+  global grain
+  global quest
+  global counted_pantry
+  global simplified_common_pantry
+  global simplified_rare_pantry
+  global simplified_mythical_pantry
+  global simplified_legendary_pantry
+  global quest_cooldown
+  collection.update_one({"_id":message.author.id}, {"$set":{"name":message.author.name}})
+  for result in user:
+    common_pantry = result["common_pantry"]
+    rare_pantry = result["rare_pantry"]
+    mythical_pantry = result["mythical_pantry"]
+    legendary_pantry = result["legendary_pantry"]
+    pantry = result["pantry"]
+    card_cooldown = result["card_cooldown"]
+    farm_cooldown = result["farm_cooldown"]
+    grain = int(result["grain"])
+  
+    document = collection.find_one(myquery)
+
+    if "quest" in document.keys():
+    #for result in user:
+      quest = result["quest"]
+      quest_cooldown = result["quest_cooldown"]
+  
+    if "quest" not in document.keys():
+      collection.update_one({"_id":message.author.id},{"$set":{"quest":[]}})
+      collection.update_one({"_id":message.author.id},{"$set":{"quest_cooldown":0}})
+      quest = []
+      quest_cooldown = 0
+
+  
 
 
-#For botCommands.py
-
-
+  counted_pantry = Counter(pantry)
+  simplified_common_pantry = set(common_pantry)
+  simplified_rare_pantry = set(rare_pantry)
+  simplified_mythical_pantry = set(mythical_pantry)
+  simplified_legendary_pantry = set(legendary_pantry)
 
 
 
@@ -260,8 +306,7 @@ async def something(message):
       #await bake()
     
     
-    if message.content == prefix + ' pantry':
-      await pantry()
+
     
     if message.content == prefix + ' cards':
       seperator = ', '
@@ -826,44 +871,10 @@ async def something(message):
 
 @client.command(name="bake")
 async def bake(ctx):
-      myquery = { "_id": ctx.author.id }
-      user = collection.find(myquery)
-      if (collection.count_documents(myquery) == 0):
-          post = {"_id": ctx.author.id, "pantry": [], "common_pantry": [], "rare_pantry":[],"mythical_pantry":[],"legendary_pantry":[],"card_cooldown":0,"grain":int(0), "farm_cooldown":0, "name":ctx.author.name, "quest": [], "quest_cooldown":0} 
-          collection.insert_one(post)
-      collection.update_one({"_id":ctx.author.id}, {"$set":{"name":ctx.author.name}})
-      for result in user:
-        common_pantry = result["common_pantry"]
-        rare_pantry = result["rare_pantry"]
-        mythical_pantry = result["mythical_pantry"]
-        legendary_pantry = result["legendary_pantry"]
-        pantry = result["pantry"]
-        card_cooldown = result["card_cooldown"]
-        farm_cooldown = result["farm_cooldown"]
-        grain = int(result["grain"])
-      
-        document = collection.find_one(myquery)
-
-        if "quest" in document.keys():
-        #for result in user:
-          quest = result["quest"]
-          quest_cooldown = result["quest_cooldown"]
-      
-        if "quest" not in document.keys():
-          collection.update_one({"_id":ctx.author.id},{"$set":{"quest":[]}})
-          collection.update_one({"_id":ctx.author.id},{"$set":{"quest_cooldown":0}})
-          quest = []
-          quest_cooldown = 0
-
-
-      counted_pantry = Counter(pantry)
-      simplified_common_pantry = set(common_pantry)
-      simplified_rare_pantry = set(rare_pantry)
-      simplified_mythical_pantry = set(mythical_pantry)
-      simplified_legendary_pantry = set(legendary_pantry)
-      for result in user:
-        card_cooldown = result["card_cooldown"]   
-        pantry = result["pantry"]
+      await initCommand(ctx)
+      #for result in user:
+        #card_cooldown = result["card_cooldown"]   
+        #pantry = result["pantry"]
       #Checks to make sure baking meets requirements
       if time.time() - card_cooldown >= 3600 and len(pantry)<pantry_limit:
         card_category = random.randint(1,1000)
@@ -918,7 +929,23 @@ async def bake(ctx):
       
       else:
         embed = discord.Embed(description = "You have don't have any more room left in your pantry", colour = 0xff1100)
-        await ctx.send(embed = embed)   
+        await ctx.send(embed = embed)
+
+@client.command(name="pantry")
+async def pantry(ctx):
+  await initCommand(ctx)
+  common_shown = [count_duplicates(x, counted_pantry) for x in simplified_common_pantry]
+  rare_shown = [count_duplicates(x, counted_pantry) for x in simplified_rare_pantry]
+  mythical_shown = [count_duplicates(x, counted_pantry) for x in simplified_mythical_pantry]
+  legendary_shown = [count_duplicates(x, counted_pantry) for x in simplified_legendary_pantry]
+
+  seperator = ", "
+    
+  pantry_shown = '**Commons**: '+seperator.join(sorted(common_shown))+'\n\n**Rares**: '+seperator.join(sorted(rare_shown))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_shown))+'\n\n**Legendaries** '+seperator.join(sorted(legendary_shown))
+    
+  embed = discord.Embed(title = ctx.author.name+"'s pantry:", description = pantry_shown, colour = 0x000000)
+  embed.set_footer(text = 'Cards sell value: '+str(len(common_pantry)*500+len(rare_pantry)*2500+len(mythical_pantry)*6000+len(legendary_pantry)*20000)+' grain'+" | Size: "+str(len(pantry))+"/"+str(pantry_limit))
+  await ctx.channel.send(embed = embed)
 
 
 
