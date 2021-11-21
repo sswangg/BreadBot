@@ -260,82 +260,8 @@ async def something(message):
       embed = discord.Embed(title = message.author.name+"'s grain:", description = str(grain), colour = 0x000000)
       await message.channel.send(embed = embed)
     
-    
-    
-    if message.content.startswith(prefix + ' buy'):
-      null_c, null_d, buying_card = message.content.partition("buy ")
-      for result in user:
-        grain = int(result["grain"])
-      if buying_card in common_bread and grain >= 1000 and len(pantry)<pantry_limit:
-          
-            grain = grain-1000
-          
-            card = buying_card
-          
-
-            embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 1000 grain. This card is a common", colour = 0x808080)
-            await message.channel.send(embed = embed)
-            collection.update_one({"_id":message.author.id}, {"$push":{"common_pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$push":{"pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
-  
-            return
-
 
       
-      if buying_card in rare_bread and grain >= 5000 and len(pantry)<pantry_limit:       
-        
-            card = buying_card
-       
-            grain = grain-5000   
-        
-
-            embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 5000 grain. This card is a rare", colour = 0x0073ff)
-            await message.channel.send(embed = embed)
-            collection.update_one({"_id":message.author.id}, {"$push":{"rare_pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$push":{"pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
-            return 
-
-        
-      if buying_card in mythical_bread and grain >= 12000 and len(pantry)<pantry_limit:  
-            card = buying_card
-            grain = grain-12000           
-
-            embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 12000 grain. This card is a mythical", colour = 0xb700ff)
-            await message.channel.send(embed = embed)
-            collection.update_one({"_id":message.author.id}, {"$push":{"mythical_pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$push":{"pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
- 
-            return
-
-
-      if buying_card in legendary_bread and grain >= 40000 and len(pantry)<pantry_limit:
-            card = buying_card
-            grain = grain-40000 
-        
-            embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 40000 grain. This card is a LEGENDARY!", colour = 0xfbff00)
-            await message.channel.send(embed = embed)
-            collection.update_one({"_id":message.author.id}, {"$push":{"legendary_pantry":card}})
-            collection.update_one({"_id":message.author.id}, {"$push":{"pantry":card}})
-
-            collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
-            return
-        
-      if buying_card not in legendary_bread and buying_card not in mythical_bread and buying_card not in rare_bread and buying_card not in common_bread:
-          embed = discord.Embed(description = "This card doesn't exist", colour = 0xff1100)
-          embed.set_footer(text = "To check all cards, type .bread cards")
-          await message.channel.send(embed = embed)
-      
-      elif len(pantry) >=pantry_limit:
-        embed = discord.Embed(description = "You have don't have any more room left in your pantry", colour = 0xff1100)
-        await message.channel.send(embed = embed)
-      
-      else:
-          embed = discord.Embed(description = "You don't have enough grain", colour = 0xff1100)
-          embed.set_footer(text = "To check the prices of bread, type .bread prices")
-          await message.channel.send(embed = embed)
 
 
       
@@ -739,7 +665,7 @@ async def bake(ctx):
         await ctx.send(embed = embed)
 
 @client.command(name="pantry")
-async def pantry(ctx):
+async def show_pantry(ctx):
   await initCommand(ctx)
   common_shown = [count_duplicates(x, counted_pantry) for x in simplified_common_pantry]
   rare_shown = [count_duplicates(x, counted_pantry) for x in simplified_rare_pantry]
@@ -886,7 +812,83 @@ async def sell(ctx,*,selling_card):
 
   else:
     await ctx.send("You either don't have this item or it doesn't exist")
-        
+
+@client.command(name="buy")
+async def buy(ctx,*,buying_card):
+  await initCommand(ctx)
+  global grain
+  for result in user:
+    grain = int(result["grain"])
+  if buying_card in common_bread and grain >= 1000 and len(pantry)<pantry_limit:
+      
+        grain = grain-1000
+      
+        card = buying_card
+      
+
+        embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 1000 grain. This card is a common", colour = 0x808080)
+        await ctx.send(embed = embed)
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"common_pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+
+        return
+
+
+  
+  if buying_card in rare_bread and grain >= 5000 and len(pantry)<pantry_limit:       
+    
+        card = buying_card
+    
+        grain = grain-5000   
+    
+
+        embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 5000 grain. This card is a rare", colour = 0x0073ff)
+        await ctx.send(embed = embed)
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"rare_pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+        return 
+
+    
+  if buying_card in mythical_bread and grain >= 12000 and len(pantry)<pantry_limit:  
+        card = buying_card
+        grain = grain-12000           
+
+        embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 12000 grain. This card is a mythical", colour = 0xb700ff)
+        await ctx.send(embed = embed)
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"mythical_pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+
+        return
+
+
+  if buying_card in legendary_bread and grain >= 40000 and len(pantry)<pantry_limit:
+        card = buying_card
+        grain = grain-40000 
+    
+        embed = discord.Embed(description = "Congratulations, you bought a "+card+" for 40000 grain. This card is a LEGENDARY!", colour = 0xfbff00)
+        await ctx.send(embed = embed)
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"legendary_pantry":card}})
+        collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+
+        collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+        return
+    
+  if buying_card not in legendary_bread and buying_card not in mythical_bread and buying_card not in rare_bread and buying_card not in common_bread:
+      embed = discord.Embed(description = "This card doesn't exist", colour = 0xff1100)
+      embed.set_footer(text = "To check all cards, type .bread cards")
+      await ctx.send(embed = embed)
+  
+  elif len(pantry) >=pantry_limit:
+    embed = discord.Embed(description = "You have don't have any more room left in your pantry", colour = 0xff1100)
+    await ctx.send(embed = embed)
+  
+  else:
+      embed = discord.Embed(description = "You don't have enough grain", colour = 0xff1100)
+      embed.set_footer(text = "To check the prices of bread, type .bread prices")
+      await ctx.send(embed = embed)    
 
 
 @client.event
