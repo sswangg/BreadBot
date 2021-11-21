@@ -65,8 +65,7 @@ collection = database["UserData"]
 
 
 
-
-client = discord.Client()
+client = commands.Bot(command_prefix='.bread ')
 
 async def initCommand(message):
   global myquery
@@ -139,7 +138,7 @@ async def on_guild_join(guild):
     await client.change_presence(status=discord.Status.idle, activity=discord.Game('.bread help; In '+str(len(client.guilds))+' servers'))
     prefix = '.bread'
 
-client = commands.Bot(command_prefix='.bread ')
+
 #initTest(client)
 @client.command(name="test")
 async def test(ctx,arg):
@@ -282,12 +281,7 @@ async def something(message):
     
 
     
-    if message.content == prefix + ' cards':
-      seperator = ', '
-      cards_shown = '**Commons**: '+seperator.join(sorted(common_bread))+'\n\n**Rares**: '+seperator.join(sorted(rare_bread))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_bread))+'\n\n**Legendaries**: '+seperator.join(sorted(legendary_bread))
-        
-      embed = discord.Embed(title = "All cards:", description = cards_shown, colour = 0x000000)
-      await message.channel.send(embed = embed)
+      
 
     if message.content == prefix+' prices':
       embed = discord.Embed(title = "Prices:", description = "**Buying**\n`Common cards`: 1000 grain\n`Rare cards`: 5000 grain\n `Mythical cards`: 12000 grain\n `Legendary cards`: 40000 grain\n\n**Selling**\n`Common cards`: 500 grain\n`Rare cards`: 2500 grain\n `Mythical cards`: 6000 grain\n`Legendary cards`: 20000 grain", colour = 0x000000)
@@ -842,7 +836,9 @@ async def something(message):
         embed.set_footer(text = "Type .bread view quest to show your ongoing quest")
         await message.channel.send(embed = embed)
 
-
+@client.command(name="github")
+async def github(ctx):
+  await ctx.send("Contribute to the Bot! https://github.com/Cryplo/BreadBot")
 @client.command(name="bake")
 async def bake(ctx):
       await initCommand(ctx)
@@ -917,7 +913,13 @@ async def pantry(ctx):
   embed = discord.Embed(title = ctx.author.name+"'s pantry:", description = pantry_shown, colour = 0x000000)
   embed.set_footer(text = 'Cards sell value: '+str(len(common_pantry)*500+len(rare_pantry)*2500+len(mythical_pantry)*6000+len(legendary_pantry)*20000)+' grain'+" | Size: "+str(len(pantry))+"/"+str(pantry_limit))
   await ctx.channel.send(embed = embed)
-
+@client.command(name="cards")
+async def cards(ctx):
+  seperator = ', '
+  cards_shown = '**Commons**: '+seperator.join(sorted(common_bread))+'\n\n**Rares**: '+seperator.join(sorted(rare_bread))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_bread))+'\n\n**Legendaries**: '+seperator.join(sorted(legendary_bread))
+    
+  embed = discord.Embed(title = "All cards:", description = cards_shown, colour = 0x000000)
+  await ctx.send(embed = embed)
 
 
 
