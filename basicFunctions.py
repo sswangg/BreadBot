@@ -31,8 +31,3 @@ def convert(seconds):
 def count_duplicates(x, array):
   x = x+"["+str(array[x])+"]"
   return(x)
-
-#Doesnt work, look into later
-#def retrieve_data(user,name):
-  #for result in user:
-    #return result[name]

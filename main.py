@@ -3,7 +3,6 @@ import discord
 import os
 import random
 from discord.ext import commands
-from discord.ext.commands import Bot
 import time
 import datetime
 from datetime import datetime
@@ -18,10 +17,8 @@ import math
 import collections
 from collections import Counter
 #from commands import update_log
-from botCommands import *
 from basicFunctions import *
-from variables import *
-
+import config
 
 
 prefix = '.bread'
@@ -29,38 +26,14 @@ madlibs = {}
 grain = {}
 farm_cooldown = {}
 collectors = []
-pantry_limit = 500
-common_bread = []
-rare_bread = []
-mythical_bread = []
-legendary_bread = []
-
-#Open bread_data files
-with open('bread_data/common_bread.txt') as my_file:
-    common_bread = my_file.readlines()
-    for i in range(0,len(common_bread)):
-      common_bread[i] = common_bread[i].strip()
-
-with open('bread_data/rare_bread.txt') as my_file:
-    rare_bread = my_file.readlines()
-    for i in range(0,len(rare_bread)):
-      rare_bread[i] = rare_bread[i].strip()
-
-with open('bread_data/mythical_bread.txt') as my_file:
-    mythical_bread = my_file.readlines()
-    for i in range(0,len(mythical_bread)):
-      mythical_bread[i] = mythical_bread[i].strip()
-
-with open('bread_data/legendary_bread.txt') as my_file:
-    legendary_bread = my_file.readlines()
-    for i in range(0,len(legendary_bread)):
-      legendary_bread[i] = legendary_bread[i].strip()
-with open('text_files/updateLog.txt') as my_file:
-    updateLog = my_file.read()
-with open('text_files/help.txt') as my_file:
-    helpContent = my_file.read()
-with open('text_files/faq.txt') as my_file:
-    faqContent = my_file.read()
+pantry_limit = config.pantry_limit
+common_bread = config.common_bread
+rare_bread = config.rare_bread
+mythical_bread = config.mythical_bread
+legendary_bread = config.legendary_bread
+updateLog = config.updateLog
+helpContent = config.helpContent
+faqContent = config.faqContent
 
 
 
@@ -92,18 +65,64 @@ collection = database["UserData"]
 
 
 
-#main code
+
 client = discord.Client()
 
-#@client.event
-#async def on_guild_join():
-  #prefix = '.bread'
- 
+async def initCommand(message):
+  global myquery
+  global user
+  myquery = { "_id": message.author.id }
+  user = collection.find(myquery)
+  if (collection.count_documents(myquery) == 0):
+          post = {"_id": message.author.id, "pantry": [], "common_pantry": [], "rare_pantry":[],"mythical_pantry":[],"legendary_pantry":[],"card_cooldown":0,"grain":int(0), "farm_cooldown":0, "name":message.author.name, "quest": [], "quest_cooldown":0} 
+          collection.insert_one(post)
+  global common_pantry
+  global rare_pantry
+  global mythical_pantry
+  global legendary_pantry
+  global pantry
+  global card_cooldown
+  global farm_cooldown
+  global grain
+  global quest
+  global counted_pantry
+  global simplified_common_pantry
+  global simplified_rare_pantry
+  global simplified_mythical_pantry
+  global simplified_legendary_pantry
+  global quest_cooldown
+  collection.update_one({"_id":message.author.id}, {"$set":{"name":message.author.name}})
+  for result in user:
+    common_pantry = result["common_pantry"]
+    rare_pantry = result["rare_pantry"]
+    mythical_pantry = result["mythical_pantry"]
+    legendary_pantry = result["legendary_pantry"]
+    pantry = result["pantry"]
+    card_cooldown = result["card_cooldown"]
+    farm_cooldown = result["farm_cooldown"]
+    grain = int(result["grain"])
+  
+    document = collection.find_one(myquery)
+
+    if "quest" in document.keys():
+    #for result in user:
+      quest = result["quest"]
+      quest_cooldown = result["quest_cooldown"]
+  
+    if "quest" not in document.keys():
+      collection.update_one({"_id":message.author.id},{"$set":{"quest":[]}})
+      collection.update_one({"_id":message.author.id},{"$set":{"quest_cooldown":0}})
+      quest = []
+      quest_cooldown = 0
+
+  
 
 
-#For botCommands.py
-
-
+  counted_pantry = Counter(pantry)
+  simplified_common_pantry = set(common_pantry)
+  simplified_rare_pantry = set(rare_pantry)
+  simplified_mythical_pantry = set(mythical_pantry)
+  simplified_legendary_pantry = set(legendary_pantry)
 
 
 
@@ -120,16 +139,21 @@ async def on_guild_join(guild):
     await client.change_presence(status=discord.Status.idle, activity=discord.Game('.bread help; In '+str(len(client.guilds))+' servers'))
     prefix = '.bread'
 
+client = commands.Bot(command_prefix='.bread ')
+#initTest(client)
+@client.command(name="test")
+async def test(ctx,arg):
+  await ctx.send(ctx.author.id)
 
 
-@client.event
-async def on_message(message):
+
+@client.listen("on_message")
+async def something(message):
+    
     global prefix
-    #????
     global after_keyowrd
     global player
     global madlibs
-    global test
     global collectors
     global card_cooldown
     global common_pantry
@@ -141,8 +165,8 @@ async def on_message(message):
     global quest
     global quest_cooldown
     global counted_pantry
-    initMain(client, message,common_bread,rare_bread,mythical_bread,legendary_bread)
-    initVariables()
+    global user
+    global collection
     #If message of author is client, then ignore
     if message.author == client.user:
         return
@@ -210,14 +234,41 @@ async def on_message(message):
     #Starts user account
     #Idk why theres two different blocks of code for starting a user account
     if message.content.startswith(prefix):
-      await createAccount()
-      await updateUserInfo()
+      if (collection.count_documents(myquery) == 0):
+          post = {"_id": message.author.id, "pantry": [], "common_pantry": [], "rare_pantry":[],"mythical_pantry":[],"legendary_pantry":[],"card_cooldown":0,"grain":int(0), "farm_cooldown":0, "name":message.author.name, "quest": [], "quest_cooldown":0} 
+          collection.insert_one(post)
+      collection.update_one({"_id":message.author.id}, {"$set":{"name":message.author.name}})
+      for result in user:
+        common_pantry = result["common_pantry"]
+        rare_pantry = result["rare_pantry"]
+        mythical_pantry = result["mythical_pantry"]
+        legendary_pantry = result["legendary_pantry"]
+        pantry = result["pantry"]
+        card_cooldown = result["card_cooldown"]
+        farm_cooldown = result["farm_cooldown"]
+        grain = int(result["grain"])
+      
+        document = collection.find_one(myquery)
+
+        if "quest" in document.keys():
+        #for result in user:
+          quest = result["quest"]
+          quest_cooldown = result["quest_cooldown"]
+      
+        if "quest" not in document.keys():
+          collection.update_one({"_id":message.author.id},{"$set":{"quest":[]}})
+          collection.update_one({"_id":message.author.id},{"$set":{"quest_cooldown":0}})
+          quest = []
+          quest_cooldown = 0
+
+
+      counted_pantry = Counter(pantry)
+      simplified_common_pantry = set(common_pantry)
+      simplified_rare_pantry = set(rare_pantry)
+      simplified_mythical_pantry = set(mythical_pantry)
+      simplified_legendary_pantry = set(legendary_pantry)
       
 
-
-    if message.content == prefix + ' test':
-      pantry = common_pantry+rare_pantry+mythical_pantry+legendary_pantry
-      collection.update_one({"_id":message.author.id},{"$set":{"pantry":pantry}})
 
 ####
 
@@ -225,12 +276,11 @@ async def on_message(message):
         
 ####      
     #Baking
-    if command == 'bake':
-      await bake()
+    #if command == 'bake':
+      #await bake()
     
     
-    if message.content == prefix + ' pantry':
-      await pantry()
+
     
     if message.content == prefix + ' cards':
       seperator = ', '
@@ -792,7 +842,81 @@ async def on_message(message):
         embed.set_footer(text = "Type .bread view quest to show your ongoing quest")
         await message.channel.send(embed = embed)
 
+
+@client.command(name="bake")
+async def bake(ctx):
+      await initCommand(ctx)
+      #Checks to make sure baking meets requirements
+      if time.time() - card_cooldown >= 3600 and len(pantry)<pantry_limit:
+        card_category = random.randint(1,1000)
+        #Common Card Baked
+        if card_category > 0 and card_category <= 700:
+            card = common_bread[random.randint(0,len(common_bread)-1)]
+            embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a common", colour = 0x808080)
+            
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"common_pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
+            await ctx.send(embed = embed)
+
+        #Rare Card Baked
+        if card_category > 700 and card_category <= 975:
+            card = rare_bread[random.randint(0,len(rare_bread)-1)]
+          
+
+            embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a rare", colour = 0x0073ff)
+            await ctx.send(embed = embed)
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"rare_pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
+
+        #Mythical Card Baked
+        if card_category > 975 and card_category <= 997:
+            card = mythical_bread[random.randint(0,len(mythical_bread)-1)]
+          
+
+            embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a mythical", colour = 0xb700ff)
+            await ctx.send(embed = embed)
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"mythical_pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
+        #Legendary Card Baked
+        if card_category > 997 and card_category <= 1000:
+            card = legendary_bread[random.randint(0,len(legendary_bread)-1)]
+          
+            embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a LEGENDARY!", colour = 0xfbff00)
+            await ctx.send(embed = embed)
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"legendary_pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+            collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
+     
+        return
+        
+      #Cooldown Time
+      if time.time() - card_cooldown < 3600:
+        delay_left = 3600- (time.time() - card_cooldown)
+        embed = discord.Embed(description = 'You have ' +convert(delay_left)+' left until you can use this command again', colour = 0xff1100)
+        await ctx.send(embed = embed)
+      
+      else:
+        embed = discord.Embed(description = "You have don't have any more room left in your pantry", colour = 0xff1100)
+        await ctx.send(embed = embed)
+
+@client.command(name="pantry")
+async def pantry(ctx):
+  await initCommand(ctx)
+  common_shown = [count_duplicates(x, counted_pantry) for x in simplified_common_pantry]
+  rare_shown = [count_duplicates(x, counted_pantry) for x in simplified_rare_pantry]
+  mythical_shown = [count_duplicates(x, counted_pantry) for x in simplified_mythical_pantry]
+  legendary_shown = [count_duplicates(x, counted_pantry) for x in simplified_legendary_pantry]
+
+  seperator = ", "
     
+  pantry_shown = '**Commons**: '+seperator.join(sorted(common_shown))+'\n\n**Rares**: '+seperator.join(sorted(rare_shown))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_shown))+'\n\n**Legendaries** '+seperator.join(sorted(legendary_shown))
+    
+  embed = discord.Embed(title = ctx.author.name+"'s pantry:", description = pantry_shown, colour = 0x000000)
+  embed.set_footer(text = 'Cards sell value: '+str(len(common_pantry)*500+len(rare_pantry)*2500+len(mythical_pantry)*6000+len(legendary_pantry)*20000)+' grain'+" | Size: "+str(len(pantry))+"/"+str(pantry_limit))
+  await ctx.channel.send(embed = embed)
 
 
 
@@ -989,8 +1113,9 @@ async def on_raw_reaction_add (payload):
         await message.edit(embed = embed)
 
 
+
     
- 
+
 
 
 
