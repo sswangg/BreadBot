@@ -18,8 +18,7 @@ import collections
 from collections import Counter
 #from commands import update_log
 from basicFunctions import *
-from variables import *
-
+import config
 
 
 prefix = '.bread'
@@ -27,39 +26,14 @@ madlibs = {}
 grain = {}
 farm_cooldown = {}
 collectors = []
-pantry_limit = 500
-common_bread = []
-rare_bread = []
-mythical_bread = []
-legendary_bread = []
-
-#Open bread_data files
-
-with open('text_files/updateLog.txt') as my_file:
-    updateLog = my_file.read()
-with open('text_files/help.txt') as my_file:
-    helpContent = my_file.read()
-with open('text_files/faq.txt') as my_file:
-    faqContent = my_file.read()
-with open('bread_data/common_bread.txt') as my_file:
-    common_bread = my_file.readlines()
-    for i in range(0,len(common_bread)):
-      common_bread[i] = common_bread[i].strip()
-
-with open('bread_data/rare_bread.txt') as my_file:
-    rare_bread = my_file.readlines()
-    for i in range(0,len(rare_bread)):
-      rare_bread[i] = rare_bread[i].strip()
-
-with open('bread_data/mythical_bread.txt') as my_file:
-    mythical_bread = my_file.readlines()
-    for i in range(0,len(mythical_bread)):
-      mythical_bread[i] = mythical_bread[i].strip()
-
-with open('bread_data/legendary_bread.txt') as my_file:
-    legendary_bread = my_file.readlines()
-    for i in range(0,len(legendary_bread)):
-      legendary_bread[i] = legendary_bread[i].strip()
+pantry_limit = config.pantry_limit
+common_bread = config.common_bread
+rare_bread = config.rare_bread
+mythical_bread = config.mythical_bread
+legendary_bread = config.legendary_bread
+updateLog = config.updateLog
+helpContent = config.helpContent
+faqContent = config.faqContent
 
 
 
@@ -872,9 +846,6 @@ async def something(message):
 @client.command(name="bake")
 async def bake(ctx):
       await initCommand(ctx)
-      #for result in user:
-        #card_cooldown = result["card_cooldown"]   
-        #pantry = result["pantry"]
       #Checks to make sure baking meets requirements
       if time.time() - card_cooldown >= 3600 and len(pantry)<pantry_limit:
         card_category = random.randint(1,1000)
