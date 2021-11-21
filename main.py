@@ -864,6 +864,7 @@ async def buy(ctx,*,buying_card):
 @client.command(name="grain")
 async def show_grain(ctx,*mention):
   await initCommand(ctx)
+  mention = ''.join(mention)
   if mention!='':
     x = "<@!>"
     for char in x:
