@@ -266,44 +266,7 @@ async def something(message):
 
 
 
-    if message.content == prefix+ ' farm':
-        jackpot = random.randint(1,100)  
-        
-        if time.time()-farm_cooldown > 10 and jackpot < 90:
-          grain_gained = random.randint(10,25)
-          farm_cooldown = time.time()
-          grain = grain+grain_gained
-          embed = discord.Embed(description = 'You gained ' +str(grain_gained)+' pieces of grain', colour = 0x0dff00)
-          await message.channel.send(embed = embed)
-          collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
-          collection.update_one({"_id":message.author.id}, {"$set":{"farm_cooldown":farm_cooldown}})
-          return  
 
-        if time.time()-farm_cooldown > 10 and jackpot >= 90 and jackpot < 99:
-          grain_gained = random.randint(35,65)
-          farm_cooldown = time.time()
-          grain = grain+grain_gained
-          embed = discord.Embed(description = 'Mini Jackpot! You gained ' +str(grain_gained)+' pieces of grain', colour = 0x0dff00)
-          await message.channel.send(embed = embed)
-          collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
-          collection.update_one({"_id":message.author.id}, {"$set":{"farm_cooldown":farm_cooldown}})
-          return  
-        
-        
-        if time.time()-farm_cooldown > 10 and jackpot >= 99:
-          grain_gained = random.randint(110,140)
-          farm_cooldown = time.time()
-          grain = grain+grain_gained
-          embed = discord.Embed(description = 'HUGE JACKPOT!!! You gained ' +str(grain_gained)+' pieces of grain', colour = 0x0dff00)
-          await message.channel.send(embed = embed)
-          collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain}})
-          collection.update_one({"_id":message.author.id}, {"$set":{"farm_cooldown":farm_cooldown}})
-          return  
-        
-        else:
-          farm_delay_left = 10 - (int(time.time()) - int(farm_cooldown))
-          embed = discord.Embed(description = 'You have ' +str(farm_delay_left)+' seconds left until you can use this command again', colour = 0xff1100)
-          await message.channel.send(embed = embed)
     
     if message.content.startswith(prefix+' trade'):
 
@@ -886,6 +849,49 @@ async def show_grain(ctx,*mention):
   embed = discord.Embed(title = str(viewing_user.name)+"'s grain:", description = grain, colour = 0x000000)
   
   await ctx.send(embed = embed)
+@client.command(name="farm")
+async def farm(ctx):
+  await initCommand(ctx)
+  global grain
+  global farm_cooldown
+  jackpot = random.randint(1,100)  
+  
+  if time.time()-farm_cooldown > 10 and jackpot < 90:
+    grain_gained = random.randint(10,25)
+    farm_cooldown = time.time()
+    grain = grain+grain_gained
+    embed = discord.Embed(description = 'You gained ' +str(grain_gained)+' pieces of grain', colour = 0x0dff00)
+    await ctx.send(embed = embed)
+    collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+    collection.update_one({"_id":ctx.author.id}, {"$set":{"farm_cooldown":farm_cooldown}})
+    return  
+
+  if time.time()-farm_cooldown > 10 and jackpot >= 90 and jackpot < 99:
+    grain_gained = random.randint(35,65)
+    farm_cooldown = time.time()
+    grain = grain+grain_gained
+    embed = discord.Embed(description = 'Mini Jackpot! You gained ' +str(grain_gained)+' pieces of grain', colour = 0x0dff00)
+    await ctx.send(embed = embed)
+    collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+    collection.update_one({"_id":ctx.author.id}, {"$set":{"farm_cooldown":farm_cooldown}})
+    return  
+  
+  
+  if time.time()-farm_cooldown > 10 and jackpot >= 99:
+    grain_gained = random.randint(110,140)
+    farm_cooldown = time.time()
+    grain = grain+grain_gained
+    embed = discord.Embed(description = 'HUGE JACKPOT!!! You gained ' +str(grain_gained)+' pieces of grain', colour = 0x0dff00)
+    await ctx.send(embed = embed)
+    collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain}})
+    collection.update_one({"_id":ctx.author.id}, {"$set":{"farm_cooldown":farm_cooldown}})
+    return  
+  
+  else:
+    farm_delay_left = 10 - (int(time.time()) - int(farm_cooldown))
+    embed = discord.Embed(description = 'You have ' +str(farm_delay_left)+' seconds left until you can use this command again', colour = 0xff1100)
+    await ctx.send(embed = embed)
+
 
 @client.event
 async def on_raw_reaction_add (payload):
