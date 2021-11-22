@@ -64,6 +64,7 @@ collection = database["UserData"]
 
 
 client = commands.Bot(command_prefix='.bread ')
+client.load_extension("cogs.misc")
 
 async def initCommand(message):
   global myquery
@@ -535,9 +536,7 @@ async def something(message):
         embed.set_footer(text = "Type .bread view quest to show your ongoing quest")
         await message.channel.send(embed = embed)
 
-@client.command(name="github")
-async def github(ctx):
-  await ctx.send("Contribute to the Bot! https://github.com/Cryplo/BreadBot")
+
 
 @client.command(name="bake")
 async def bake(ctx):
