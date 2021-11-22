@@ -17,7 +17,7 @@ import math
 import collections
 from collections import Counter
 #from commands import update_log
-from basicFunctions import *
+from functions import *
 import config
 
 
@@ -474,21 +474,7 @@ async def something(message):
 
 
 
-@client.command(name="pantry")
-async def show_pantry(ctx):
-  await initCommand(ctx)
-  common_shown = [count_duplicates(x, counted_pantry) for x in simplified_common_pantry]
-  rare_shown = [count_duplicates(x, counted_pantry) for x in simplified_rare_pantry]
-  mythical_shown = [count_duplicates(x, counted_pantry) for x in simplified_mythical_pantry]
-  legendary_shown = [count_duplicates(x, counted_pantry) for x in simplified_legendary_pantry]
 
-  seperator = ", "
-    
-  pantry_shown = '**Commons**: '+seperator.join(sorted(common_shown))+'\n\n**Rares**: '+seperator.join(sorted(rare_shown))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_shown))+'\n\n**Legendaries** '+seperator.join(sorted(legendary_shown))
-    
-  embed = discord.Embed(title = ctx.author.name+"'s pantry:", description = pantry_shown, colour = 0x000000)
-  embed.set_footer(text = 'Cards sell value: '+str(len(common_pantry)*500+len(rare_pantry)*2500+len(mythical_pantry)*6000+len(legendary_pantry)*20000)+' grain'+" | Size: "+str(len(pantry))+"/"+str(pantry_limit))
-  await ctx.channel.send(embed = embed)
 
 @client.command(name="cards")
 async def cards(ctx):
@@ -700,31 +686,7 @@ async def buy(ctx,*,buying_card):
       embed.set_footer(text = "To check the prices of bread, type .bread prices")
       await ctx.send(embed = embed)    
 
-@client.command(name="grain")
-async def show_grain(ctx,*mention):
-  await initCommand(ctx)
-  mention = ''.join(mention)
-  if mention!='':
-    x = "<@!>"
-    for char in x:
-      mention = mention.replace(char, "")
-    viewing_id = mention
-    viewing_id = int(viewing_id)
 
-  else:
-    viewing_id = ctx.author.id
-  view_query = { "_id": viewing_id }
-
-  viewing = collection.find(view_query)
-  if collection.count_documents(view_query) == 1:
-
-    for result in viewing:
-        grain = result["grain"]
-  viewing_user = await client.fetch_user(viewing_id)
-
-  embed = discord.Embed(title = str(viewing_user.name)+"'s grain:", description = grain, colour = 0x000000)
-  
-  await ctx.send(embed = embed)
 @client.command(name="farm")
 async def farm(ctx):
   await initCommand(ctx)

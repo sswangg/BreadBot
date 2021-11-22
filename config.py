@@ -27,3 +27,4 @@ with open('text_files/bread_data/legendary_bread.txt') as my_file:
   for i in range(0,len(legendary_bread)):
     legendary_bread[i] = legendary_bread[i].strip()
 pantry_limit = 1000
+bake_cooldown = 600

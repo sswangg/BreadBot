@@ -1,7 +1,10 @@
-from basicFunctions import *
+from functions import *
 import discord
 from discord.ext import commands
 import config
+import random
+import time
+import datetime
 pantry_limit = config.pantry_limit
 common_bread = config.common_bread
 rare_bread = config.rare_bread
@@ -78,59 +81,75 @@ class Game(commands.Cog):
   async def bake(self,ctx):
         await initCommand(ctx)
         #Checks to make sure baking meets requirements
-        if time.time() - card_cooldown >= 3600 and len(pantry)<pantry_limit:
-          card_category = random.randint(1,1000)
+        if time.time() - card_cooldown >= config.bake_cooldown and len(pantry)<pantry_limit:
+          ran_card_category = random.randint(1,1000)
           #Common Card Baked
-          if card_category > 0 and card_category <= 700:
+          if ran_card_category > 0 and ran_card_category <= 700:
+              card_category="common"
               card = common_bread[random.randint(0,len(common_bread)-1)]
               embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a common", colour = 0x808080)
-              
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"common_pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
               await ctx.send(embed = embed)
-
-          #Rare Card Baked
-          if card_category > 700 and card_category <= 975:
+            #Rare Card Baked
+          if ran_card_category > 700 and ran_card_category <= 975:
               card = rare_bread[random.randint(0,len(rare_bread)-1)]
-            
+              card_category="rare"
 
               embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a rare", colour = 0x0073ff)
               await ctx.send(embed = embed)
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"rare_pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
 
           #Mythical Card Baked
-          if card_category > 975 and card_category <= 997:
+          if ran_card_category > 975 and ran_card_category <= 997:
               card = mythical_bread[random.randint(0,len(mythical_bread)-1)]
-            
+              card_category="mythical"
 
               embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a mythical", colour = 0xb700ff)
               await ctx.send(embed = embed)
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"mythical_pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
           #Legendary Card Baked
-          if card_category > 997 and card_category <= 1000:
+          if ran_card_category > 997 and ran_card_category <= 1000:
               card = legendary_bread[random.randint(0,len(legendary_bread)-1)]
-            
+              card_category="legendary"
               embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a LEGENDARY!", colour = 0xfbff00)
               await ctx.send(embed = embed)
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"legendary_pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
-              collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
-      
+          collection.update_one({"_id":ctx.author.id}, {"$push":{card_category+"_pantry":card}})
+          collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
+          collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
           return
-          
-        #Cooldown Time
-        if time.time() - card_cooldown < 3600:
-          delay_left = 3600- (time.time() - card_cooldown)
+          #Cooldown Time
+        if time.time() - card_cooldown < config.bake_cooldown:
+          delay_left = config.bake_cooldown- (time.time() - card_cooldown)
           embed = discord.Embed(description = 'You have ' +convert(delay_left)+' left until you can use this command again', colour = 0xff1100)
           await ctx.send(embed = embed)
-        
         else:
           embed = discord.Embed(description = "You have don't have any more room left in your pantry", colour = 0xff1100)
           await ctx.send(embed = embed)
+  @commands.command(name="pantry")
+  async def show_pantry(self,ctx):
+    await initCommand(ctx)
+    common_shown = [count_duplicates(x, counted_pantry) for x in simplified_common_pantry]
+    rare_shown = [count_duplicates(x, counted_pantry) for x in simplified_rare_pantry]
+    mythical_shown = [count_duplicates(x, counted_pantry) for x in simplified_mythical_pantry]
+    legendary_shown = [count_duplicates(x, counted_pantry) for x in simplified_legendary_pantry]
+
+    seperator = ", "
+      
+    pantry_shown = '**Commons**: '+seperator.join(sorted(common_shown))+'\n\n**Rares**: '+seperator.join(sorted(rare_shown))+'\n\n**Mythicals**: '+seperator.join(sorted(mythical_shown))+'\n\n**Legendaries** '+seperator.join(sorted(legendary_shown))
+      
+    embed = discord.Embed(title = ctx.author.name+"'s pantry:", description = pantry_shown, colour = 0x000000)
+    embed.set_footer(text = 'Cards sell value: '+str(len(common_pantry)*500+len(rare_pantry)*2500+len(mythical_pantry)*6000+len(legendary_pantry)*20000)+' grain'+" | Size: "+str(len(pantry))+"/"+str(pantry_limit))
+    await ctx.send(embed = embed)
+  @commands.command(name="grain")
+  async def show_grain(self,ctx,member: discord.Member=None):
+    await initCommand(ctx)
+    if member!=None:
+      viewing_id = member.id
+    else:
+      viewing_id = ctx.author.id
+    viewing = collection.find({ "_id": viewing_id })
+    if collection.count_documents({ "_id": viewing_id }) == 1:
+      for result in viewing:
+          grain = result["grain"]
+    viewing_user = await self.client.fetch_user(viewing_id)
+    embed = discord.Embed(title = str(viewing_user.name)+"'s grain:", description = grain, colour = 0x000000)
+    await ctx.send(embed = embed)
 def setup(client):
   client.add_cog(Game(client))
