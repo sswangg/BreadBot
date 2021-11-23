@@ -45,10 +45,6 @@ async def initCommand(ctx):
   global quest_cooldown
   collection.update_one({"_id":ctx.author.id}, {"$set":{"name":ctx.author.name}})
   for result in user:
-    common_pantry = result["common_pantry"]
-    rare_pantry = result["rare_pantry"]
-    mythical_pantry = result["mythical_pantry"]
-    legendary_pantry = result["legendary_pantry"]
     pantry = result["pantry"]
     card_cooldown = result["card_cooldown"]
     farm_cooldown = result["farm_cooldown"]
@@ -66,6 +62,19 @@ async def initCommand(ctx):
       collection.update_one({"_id":ctx.author.id},{"$set":{"quest_cooldown":0}})
       quest = []
       quest_cooldown = 0
+  common_pantry = []
+  rare_pantry = []
+  mythical_pantry = []
+  legendary_pantry = []
+  for x in pantry:
+    if x in common_bread:
+      common_pantry.append(x)
+    elif x in rare_bread:
+      rare_pantry.append(x)
+    elif x in mythical_bread:
+      mythical_pantry.append(x)
+    elif x in legendary_bread:
+      legendary_pantry.append(x)
   counted_pantry = Counter(pantry)
   simplified_common_pantry = set(common_pantry)
   simplified_rare_pantry = set(rare_pantry)
@@ -110,9 +119,9 @@ class Game(commands.Cog):
               card_category="legendary"
               embed = discord.Embed(description = "Congratulations, you baked a "+card+". This card is a LEGENDARY!", colour = 0xfbff00)
               await ctx.send(embed = embed)
-          collection.update_one({"_id":ctx.author.id}, {"$push":{card_category+"_pantry":card}})
-          collection.update_one({"_id":ctx.author.id}, {"$push":{"pantry":card}})
-          collection.update_one({"_id":ctx.author.id}, {"$set":{"card_cooldown":time.time()}})
+          db_push(ctx.author.id,card_category+"_pantry",card)
+          db_push(ctx.author.id,"pantry",card)
+          db_set(ctx.author.id,"card_cooldown",time.time())
           return
           #Cooldown Time
         if time.time() - card_cooldown < config.bake_cooldown:
