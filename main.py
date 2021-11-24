@@ -2,12 +2,14 @@
 import discord
 import discord.utils
 from discord.ext import commands
+from dotenv import load_dotenv
 
 import config
 # from commands import update_log
 from functions import *
 
 
+load_dotenv()
 prefix = '.bread'
 madlibs = {}
 collectors = []
@@ -31,7 +33,7 @@ client = commands.Bot(command_prefix='.bread ')
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    await client.change_presence(status=discord.Status.idle, activity=discord.Game('bot is being rewritten'))
+    await client.change_presence(status=discord.Status.idle, activity=discord.Game('.bread help'))
 
 
 @client.event
@@ -43,4 +45,4 @@ async def on_guild_join(guild):
 client.load_extension("cogs.misc")
 client.load_extension("cogs.game")
 
-client.run('ODk5MTIxMzEzMzA4ODc2ODAw.YWuJ-Q.1qB6qIOwQmT7ua0GsmivY4p_y-0')
+client.run('ODk5MTIxMzEzMzA4ODc2ODAw.YWuJ-Q.KYIzEyKJ4R4MxZrie21X5jxC8HA')
