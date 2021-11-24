@@ -504,7 +504,7 @@ class Game(commands.Cog):
               mythical_pantry.append(x)
           elif x in legendary_bread:
               legendary_pantry.append(x)
-        networth = len(common_pantry) * 500 + len(rare_pantry) * 2500 + len(mythical_pantry) * 6000 + len(legendary_pantry) * 20000
+        networth = len(common_pantry) * 1000 + len(rare_pantry) * 5000 + len(mythical_pantry) * 12000 + len(legendary_pantry) * 40000
         document.update({"networth":networth+document["grain"]})
         leaderboard.append(document)
       leaderboard.sort(key=lambda e: e['networth'], reverse = True)
@@ -512,7 +512,7 @@ class Game(commands.Cog):
       for n in range(0,10):
         user = await self.client.fetch_user(leaderboard[n]["_id"])
         sending_string += user.name+": "+str(f"{leaderboard[n]['networth']:,}")+"\n"
-      embed = discord.Embed(title="Global Leaderboard by Networth",
+      embed = discord.Embed(title="Global Leaderboard By Networth",
           description=sending_string,
           colour=0x0dff00)
       await ctx.send(embed=embed)
