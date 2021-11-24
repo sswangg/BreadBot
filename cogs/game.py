@@ -1,11 +1,11 @@
 import random
 import time
 from collections import Counter
-
+import math
 import discord
-import pymongo
 from discord.ext import commands
-
+from collections import OrderedDict
+from operator import getitem
 import config
 from functions import *
 
@@ -20,7 +20,7 @@ helpContent = config.helpContent
 faqContent = config.faqContent
 
 
-async def init_command(ctx):
+async def initCommand(ctx):
     global myquery
     global user
     global collection
@@ -31,7 +31,7 @@ async def init_command(ctx):
     collection = database["UserData"]
     myquery = {"_id": ctx.author.id}
     user = collection.find(myquery)
-    if collection.count_documents(myquery) == 0:
+    if (collection.count_documents(myquery) == 0):
         post = {"_id": ctx.author.id, "pantry": [], "card_cooldown": 0, "grain": int(0), "farm_cooldown": 0,
                 "name": ctx.author.name, "quest": [], "quest_cooldown": 0}
         collection.insert_one(post)
@@ -94,7 +94,7 @@ class Game(commands.Cog):
 
     @commands.command(name="bake")
     async def bake(self, ctx):
-        await init_command(ctx)
+        await initCommand(ctx)
         # Checks to make sure baking meets requirements
         if time.time() - card_cooldown >= config.bake_cooldown and len(pantry) < pantry_limit:
             ran_card_category = random.randint(1, 1000)
@@ -142,7 +142,7 @@ class Game(commands.Cog):
 
     @commands.command(name="pantry")
     async def show_pantry(self, ctx, member: discord.Member = None):
-        await init_command(ctx)
+        await initCommand(ctx)
         global pantry
         global common_pantry
         global rare_pantry
@@ -152,7 +152,7 @@ class Game(commands.Cog):
         global simplified_rare_pantry
         global simplified_mythical_pantry
         global simplified_legendary_pantry
-        await init_command(ctx)
+        await initCommand(ctx)
         global user
         if member != None:
             myquery = {"_id": member.id}
@@ -200,7 +200,7 @@ class Game(commands.Cog):
 
     @commands.command(name="grain")
     async def show_grain(self, ctx, member: discord.Member = None):
-        await init_command(ctx)
+        await initCommand(ctx)
         if member != None:
             viewing_id = member.id
         else:
@@ -215,7 +215,7 @@ class Game(commands.Cog):
 
     @commands.command(name="farm")
     async def farm(self, ctx):
-        await init_command(ctx)
+        await initCommand(ctx)
         global grain
         global farm_cooldown
         jackpot = random.randint(1, 100)
@@ -258,7 +258,7 @@ class Game(commands.Cog):
     @commands.command(name="sell")
     async def sell(self, ctx, *, sell_input):
         global grain
-        await init_command(ctx)
+        await initCommand(ctx)
         selling_cards = []
         if sell_input in pantry:
             if sell_input in common_pantry:
@@ -300,7 +300,6 @@ class Game(commands.Cog):
             await ctx.send(embed=embed)
             return
         if sell_input == "commons":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"common_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in common_pantry]}})
 
@@ -315,7 +314,6 @@ class Game(commands.Cog):
             return
 
         if sell_input == "rares":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"rare_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in rare_pantry]}})
 
@@ -330,7 +328,6 @@ class Game(commands.Cog):
             return
 
         if sell_input == "mythicals":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"mythical_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in mythical_pantry]}})
 
@@ -345,7 +342,6 @@ class Game(commands.Cog):
             return
 
         if sell_input == "legendaries":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"legendary_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in legendary_pantry]}})
 
@@ -380,7 +376,7 @@ class Game(commands.Cog):
 
     @commands.command(name="buy")
     async def buy(self, ctx, *, buying_card):
-        await init_command(ctx)
+        await initCommand(ctx)
         global grain
         for result in user:
             grain = int(result["grain"])
@@ -447,7 +443,7 @@ class Game(commands.Cog):
 
     @commands.command(name="bet")
     async def bet(self, ctx, gambling: str):
-        await init_command(ctx)
+        await initCommand(ctx)
         if str(gambling).isdigit() == True and int(gambling) <= grain:
             coin = random.randint(1, 100)
             if coin <= 60:
@@ -481,6 +477,41 @@ class Game(commands.Cog):
             embed = discord.Embed(description="Please enter a non-negative integer to bet", colour=0xff1100)
 
             await ctx.send(embed=embed)
+    @commands.command(name="leaderboard")
+    async def leaderboard(self,ctx):
+        global common_pantry
+        global rare_pantry
+        global mythical_pantry
+        global legendary_pantry
+        global pantry
+        leaderboard = []
+        for document in collection.find():
+            pantry = document["pantry"]
+            common_pantry = []
+            rare_pantry = []
+            mythical_pantry = []
+            legendary_pantry = []
+            for x in pantry:
+                if x in common_bread:
+                    common_pantry.append(x)
+                elif x in rare_bread:
+                    rare_pantry.append(x)
+                elif x in mythical_bread:
+                    mythical_pantry.append(x)
+                elif x in legendary_bread:
+                    legendary_pantry.append(x)
+            networth = len(common_pantry) * 1000 + len(rare_pantry) * 5000 + len(mythical_pantry) * 12000 + len(legendary_pantry) * 40000
+            document.update({"networth":networth+document["grain"]})
+            leaderboard.append(document)
+        leaderboard.sort(key=lambda e: e['networth'], reverse = True)
+        sending_string = ""
+        for n in range(0,10):
+            user = await self.client.fetch_user(leaderboard[n]["_id"])
+            sending_string += user.name+": "+str(f"{leaderboard[n]['networth']:,}")+"\n"
+        embed = discord.Embed(title="Global Leaderboard By Networth",
+                              description=sending_string,
+                              colour=0x0dff00)
+        await ctx.send(embed=embed)
 
 
 def setup(client):
