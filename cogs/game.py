@@ -511,7 +511,7 @@ class Game(commands.Cog):
       sending_string = ""
       for n in range(0,10):
         user = await self.client.fetch_user(leaderboard[n]["_id"])
-        sending_string += user.name+": "+str(leaderboard[n]['networth'])+"\n"
+        sending_string += user.name+": "+str(f"{leaderboard[n]['networth']:,}")+"\n"
       embed = discord.Embed(title="Global Leaderboard by Networth",
           description=sending_string,
           colour=0x0dff00)
