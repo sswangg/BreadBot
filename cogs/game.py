@@ -124,6 +124,7 @@ class Game(commands.Cog):
           await ctx.send(embed = embed)
   @commands.command(name="pantry")
   async def show_pantry(self,ctx,member: discord.Member=None):
+    await initCommand(ctx)
     global pantry
     global common_pantry
     global rare_pantry
@@ -134,7 +135,7 @@ class Game(commands.Cog):
     global simplified_mythical_pantry
     global simplified_legendary_pantry
     await initCommand(ctx)
-
+    global user
     if member != None:
       myquery = { "_id": member.id }
       if (collection.count_documents(myquery) == 0):

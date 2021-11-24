@@ -15,3 +15,5 @@ Added 2 more legendaries and 3 more mythicals
 You can trade up to 9 cards at a time now, for example [.bread trade baba, arepa for mollete, kitcha] Note: I will be working on bug fixes for this new feature later
 **11/18/2021**
 Rewriting code (actually this time)
+**11/23/2021**
+Removed Trade and Quest commands, since they were poorly designed but got a lot of commands to work with cogs. I will try to simplify the code even more later so it's more effective.
