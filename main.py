@@ -6,7 +6,6 @@ from discord.ext import commands
 import config
 # from commands import update_log
 from functions import *
-from keep_alive import keep_alive
 
 
 prefix = '.bread'
@@ -33,19 +32,15 @@ client = commands.Bot(command_prefix='.bread ')
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
     await client.change_presence(status=discord.Status.idle, activity=discord.Game('bot is being rewritten'))
-    prefix = '.bread'
 
 
 @client.event
 async def on_guild_join(guild):
     await client.change_presence(status=discord.Status.idle,
                                  activity=discord.Game('.bread help; In ' + str(len(client.guilds)) + ' servers'))
-    prefix = '.bread'
 
 
 client.load_extension("cogs.misc")
 client.load_extension("cogs.game")
 
-keep_alive()
-
-client.run(os.getenv('TOKEN'))
+client.run('ODk5MTIxMzEzMzA4ODc2ODAw.YWuJ-Q.1qB6qIOwQmT7ua0GsmivY4p_y-0')

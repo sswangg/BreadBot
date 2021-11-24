@@ -3,6 +3,7 @@ import time
 from collections import Counter
 
 import discord
+import pymongo
 from discord.ext import commands
 
 import config
@@ -19,7 +20,7 @@ helpContent = config.helpContent
 faqContent = config.faqContent
 
 
-async def initCommand(ctx):
+async def init_command(ctx):
     global myquery
     global user
     global collection
@@ -30,7 +31,7 @@ async def initCommand(ctx):
     collection = database["UserData"]
     myquery = {"_id": ctx.author.id}
     user = collection.find(myquery)
-    if (collection.count_documents(myquery) == 0):
+    if collection.count_documents(myquery) == 0:
         post = {"_id": ctx.author.id, "pantry": [], "card_cooldown": 0, "grain": int(0), "farm_cooldown": 0,
                 "name": ctx.author.name, "quest": [], "quest_cooldown": 0}
         collection.insert_one(post)
@@ -93,7 +94,7 @@ class Game(commands.Cog):
 
     @commands.command(name="bake")
     async def bake(self, ctx):
-        await initCommand(ctx)
+        await init_command(ctx)
         # Checks to make sure baking meets requirements
         if time.time() - card_cooldown >= config.bake_cooldown and len(pantry) < pantry_limit:
             ran_card_category = random.randint(1, 1000)
@@ -141,7 +142,7 @@ class Game(commands.Cog):
 
     @commands.command(name="pantry")
     async def show_pantry(self, ctx, member: discord.Member = None):
-        await initCommand(ctx)
+        await init_command(ctx)
         global pantry
         global common_pantry
         global rare_pantry
@@ -151,7 +152,7 @@ class Game(commands.Cog):
         global simplified_rare_pantry
         global simplified_mythical_pantry
         global simplified_legendary_pantry
-        await initCommand(ctx)
+        await init_command(ctx)
         global user
         if member != None:
             myquery = {"_id": member.id}
@@ -199,7 +200,7 @@ class Game(commands.Cog):
 
     @commands.command(name="grain")
     async def show_grain(self, ctx, member: discord.Member = None):
-        await initCommand(ctx)
+        await init_command(ctx)
         if member != None:
             viewing_id = member.id
         else:
@@ -214,7 +215,7 @@ class Game(commands.Cog):
 
     @commands.command(name="farm")
     async def farm(self, ctx):
-        await initCommand(ctx)
+        await init_command(ctx)
         global grain
         global farm_cooldown
         jackpot = random.randint(1, 100)
@@ -257,7 +258,7 @@ class Game(commands.Cog):
     @commands.command(name="sell")
     async def sell(self, ctx, *, sell_input):
         global grain
-        await initCommand(ctx)
+        await init_command(ctx)
         selling_cards = []
         if sell_input in pantry:
             if sell_input in common_pantry:
@@ -379,7 +380,7 @@ class Game(commands.Cog):
 
     @commands.command(name="buy")
     async def buy(self, ctx, *, buying_card):
-        await initCommand(ctx)
+        await init_command(ctx)
         global grain
         for result in user:
             grain = int(result["grain"])
@@ -446,7 +447,7 @@ class Game(commands.Cog):
 
     @commands.command(name="bet")
     async def bet(self, ctx, gambling: str):
-        await initCommand(ctx)
+        await init_command(ctx)
         if str(gambling).isdigit() == True and int(gambling) <= grain:
             coin = random.randint(1, 100)
             if coin <= 60:
