@@ -300,7 +300,6 @@ class Game(commands.Cog):
             await ctx.send(embed=embed)
             return
         if sell_input == "commons":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"common_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in common_pantry]}})
 
@@ -315,7 +314,6 @@ class Game(commands.Cog):
             return
 
         if sell_input == "rares":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"rare_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in rare_pantry]}})
 
@@ -330,7 +328,6 @@ class Game(commands.Cog):
             return
 
         if sell_input == "mythicals":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"mythical_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in mythical_pantry]}})
 
@@ -345,7 +342,6 @@ class Game(commands.Cog):
             return
 
         if sell_input == "legendaries":
-            collection.update_one({"_id": ctx.author.id}, {"$set": {"legendary_pantry": []}})
             collection.update_one({"_id": ctx.author.id},
                                   {"$set": {"pantry": [x for x in pantry if x not in legendary_pantry]}})
 
