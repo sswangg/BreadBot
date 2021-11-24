@@ -45,4 +45,4 @@ async def on_guild_join(guild):
 client.load_extension("cogs.misc")
 client.load_extension("cogs.game")
 
-client.run('ODk5MTIxMzEzMzA4ODc2ODAw.YWuJ-Q.KYIzEyKJ4R4MxZrie21X5jxC8HA')
+client.run(os.getenv('TOKEN'))
