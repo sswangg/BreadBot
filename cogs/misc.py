@@ -22,6 +22,11 @@ class Misc(commands.Cog):
   async def showUpdateLog(self,ctx):
     embed = discord.Embed(description = config.updateLog, colour = 0x000000)
     await ctx.send(embed = embed)
+  
+  @commands.command(name="faq")
+  async def faq(self,ctx):
+    embed = discord.Embed(description = config.faqContent, colour = 0x000000)
+    await ctx.send(embed = embed)
     
 def setup(client):
   client.add_cog(Misc(client))
