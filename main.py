@@ -129,23 +129,8 @@ async def something(message):
     myquery = { "_id": message.author.id }
     user = collection.find(myquery)
 
-    #collection.find({ "_id": message.author.id })
-    #Responds with Change Log
 
-    #changing prefix and storing the new prefix with pickle (doesn't work)
-    if message.content.startswith(prefix + ' prefix'):
-        mystring = message.content
-        prefixpart = 'prefix '
-        before_prefix, prefix, after_prefix = mystring.partition(prefixpart)
-        await message.channel.send('feature is currently unavailable')
-        prefix = '.bread'
-        #await message.channel.send('new prefix is '+after_prefix)
-        #prefix = after_prefix
-        #db[str(discord.Guild.id)] = prefix
-    #Responds with faq
-    if command == 'faq':
-        embed = discord.Embed(description = faqContent, colour = 0x000000)
-        await message.channel.send(embed = embed)
+
 
     #if message.content.startswith(prefix+' request'):
       #null,null,request = message.content.partition('request')
@@ -262,43 +247,6 @@ async def something(message):
           embed = discord.Embed(description ="Error: You don't have these card(s)!", colour = 0xff1100)
           await message.channel.send(embed=embed)
 
-    
-    if message.content.startswith(prefix+ ' bet'):
-      msg = message.content
-      null, null, gambling = msg.partition('bet ')
-      gambling = str(gambling.strip())
-      
-
-      
-      if str(gambling).isdigit() == True and int(gambling) <= grain:
-        coin = random.randint(1,100)
-        if coin <=60:
-          gambling = int(gambling)
-          gambling = gambling*(random.randint(20,100)/100)
-          gambling = math.floor(gambling)
-          
-          collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain+gambling}})
-          embed = discord.Embed(title = "You won the bet!", description = "You won the bet and gained "+str(gambling)+" pieces of grain",colour = 0x0dff00)
-
-          await message.channel.send(embed = embed)
-        
-        if coin >60:
-          gambling = int(gambling)
-          collection.update_one({"_id":message.author.id}, {"$set":{"grain":grain-gambling}})
-          
-          embed = discord.Embed(title = "You lost the bet.", description = "You lost the bet and lost "+str(gambling)+" pieces of grain", colour = 0xff1100)
-
-          await message.channel.send(embed = embed)
-      
-      if str(gambling).isdigit() == True and int(gambling) > grain:
-          embed = discord.Embed(description = "You don't have this much grain", colour = 0xff1100)
-
-          await message.channel.send(embed = embed)
-      
-      if str(gambling).isdigit() == False:
-          embed = discord.Embed(description = "Please enter a non-negative integer to bet", colour = 0xff1100)
-
-          await message.channel.send(embed = embed)
     
     if message.content == prefix+' start quest':
       if time.time()-quest_cooldown > 86400 and len(quest) != 3:

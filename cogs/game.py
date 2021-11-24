@@ -382,6 +382,38 @@ class Game(commands.Cog):
     else:
         embed = discord.Embed(description = "You don't have enough grain", colour = 0xff1100)
         embed.set_footer(text = "To check the prices of bread, type .bread prices")
+        await ctx.send(embed = embed)
+  @commands.command(name="bet")
+  async def bet(self,ctx,gambling: str):
+    await initCommand(ctx)     
+    if str(gambling).isdigit() == True and int(gambling) <= grain:
+      coin = random.randint(1,100)
+      if coin <=60:
+        gambling = int(gambling)
+        gambling = gambling*(random.randint(20,100)/100)
+        gambling = math.floor(gambling)
+        
+        collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain+gambling}})
+        embed = discord.Embed(title = "You won the bet!", description = "You won the bet and gained "+str(gambling)+" pieces of grain",colour = 0x0dff00)
+
+        await ctx.send(embed = embed)
+      
+      if coin >60:
+        gambling = int(gambling)
+        collection.update_one({"_id":ctx.author.id}, {"$set":{"grain":grain-gambling}})
+        
+        embed = discord.Embed(title = "You lost the bet.", description = "You lost the bet and lost "+str(gambling)+" pieces of grain", colour = 0xff1100)
+
+        await ctx.send(embed = embed)
+    
+    if str(gambling).isdigit() == True and int(gambling) > grain:
+        embed = discord.Embed(description = "You don't have this much grain", colour = 0xff1100)
+
+        await ctx.send(embed = embed)
+    
+    if str(gambling).isdigit() == False:
+        embed = discord.Embed(description = "Please enter a non-negative integer to bet", colour = 0xff1100)
+
         await ctx.send(embed = embed)  
 def setup(client):
   client.add_cog(Game(client))
